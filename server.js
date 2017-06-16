@@ -8,3 +8,30 @@ app.use(express.static(path.join(__dirname, 'node_modules/phaser-ce/build')))
   .get('/', (req, res, next) => res.sendFile(path.join(__dirname, 'index.html')))
 
 const server = app.listen(8080, () => console.log('Running on port 8080'))
+
+const io = socketio(server)
+
+server.lastPlayerID = 0
+
+io.on('connection', function(socket) {
+  socket.on('newplayer', function () {
+    console.log('newplayer!')
+    socket.player = {
+      id: server.lastPlayerID++,
+      x: 300,
+      y: 200
+    }
+
+    socket.emit('allplayers', getAllPlayers())
+    socket.broadcast.emit('newplayer', socket.player)
+  })
+})
+
+function getAllPlayers () {
+  let players = []
+  Object.keys(io.sockets.connected).forEach( socketID => {
+    let player = io.sockets.connected[socketID].player
+    if (player) players.push(player)
+  })
+  return players
+}

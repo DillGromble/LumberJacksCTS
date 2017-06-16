@@ -31,7 +31,9 @@ var playState = {
 
   initPlayer: function () {
     var self = this
+
     self.player = game.add.sprite(300, 200, 'characters')
+
     self.player.frame = 10
     game.add.existing(self.player)
     self.player.anchor.setTo(0.5, 1)
@@ -51,9 +53,15 @@ var playState = {
   create: function () {
     var self = this
 
+    game.playerMap = {}
+
+    game.addNewPlayer = function (id, x, y) {
+      game.playerMap[id] = game.add.sprite(x, y, 'characters')
+    }
+
+    Client.askNewPlayer()
+
     self.initMapAndPlayer()
-
-
 
   },
 
