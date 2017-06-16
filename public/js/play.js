@@ -5,11 +5,12 @@ var playState = {
   player: null,
   layer: null,
 
-  create: function () {
+  initMapAndPlayer: function () {
     var self = this
-
     // set map to tileset from load
     var map = game.add.tilemap('level')
+    self.map = map
+
     // tell map which images to source for tilemap indexes
     map.addTilesetImage('LumberTiles', 'tiles')
     // set tile at index 1125 to collision
@@ -17,15 +18,19 @@ var playState = {
 
     // create set layers of tilemap to the map, collision layer invisible
     self.layer = map.createLayer('Ground')
-    self.layer = map.createLayer('Obstacles')
+    self.initPlayer()
+    let obstacles = map.createLayer('Obstacles')
+    self.layer = obstacles
+
     collisions = map.createLayer('Meta')
     collisions.visible = false;
     self.layer = collisions
 
-
     map.setCollisionBetween(1124, 1126, true, collisions)
+  },
 
-
+  initPlayer: function () {
+    var self = this
     self.player = game.add.sprite(300, 200, 'characters')
     self.player.frame = 10
     game.add.existing(self.player)
@@ -41,6 +46,14 @@ var playState = {
     game.physics.enable(self.player, Phaser.Physics.ARCADE)
 
     self.pythInverse = 1 / Math.SQRT2
+  },
+
+  create: function () {
+    var self = this
+
+    self.initMapAndPlayer()
+
+
 
   },
 
@@ -86,5 +99,3 @@ var playState = {
 
   }
 }
-
-
