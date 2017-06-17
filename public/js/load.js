@@ -1,5 +1,7 @@
 //load.js
 
+/* global game Phaser */
+
 var loadState = {
   preload: function () {
     var loadingLabel = game.add.text(80, 150, 'loading...', {font: '30px Courier', fill: '#ffffff'})

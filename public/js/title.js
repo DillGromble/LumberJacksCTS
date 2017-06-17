@@ -1,3 +1,6 @@
+// title.js
+
+/* global game  */
 
 var titleState = {
   create: function () {

@@ -15,12 +15,10 @@ var RemotePlayer = function (index, game, player, startX, startY) {
   this.player.animations.add('right', [12, 13, 14, 15], 5)
   this.player.animations.add('left', [18, 19, 20, 21], 5)
 
-  // player.frame = 10
-  // game.add.existing(player)
-
   this.player.anchor.setTo(0.5, 0.5)
 
   this.player.id = index
+
   game.physics.enable(this.player, Phaser.Physics.ARCADE)
   this.player.body.immovable = true
   this.player.body.collideWorldBounds = true
