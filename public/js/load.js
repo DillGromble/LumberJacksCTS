@@ -13,6 +13,7 @@ var loadState = {
 
     /***** Load Graphics Assets *****/
     game.load.spritesheet('characters', 'assets/sprites/log.png', 32, 32)
+    game.load.spritesheet('seed', 'assets/sprites/GoldenSeed.png')
     game.load.tilemap('level', 'assets/tilemaps/LumberMap.json', null, Phaser.Tilemap.TILED_JSON)
     game.load.image('tiles', 'assets/tilemaps/StackTiles.png')
 

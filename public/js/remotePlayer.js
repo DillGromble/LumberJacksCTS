@@ -23,6 +23,7 @@ var RemotePlayer = function (index, game, player, startX, startY) {
   this.player.body.immovable = true
   this.player.body.collideWorldBounds = true
 
+  this.player.hasSeed = false
   this.lastPosition = { x: x, y: y }
 }
 

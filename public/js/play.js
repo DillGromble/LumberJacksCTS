@@ -1,6 +1,5 @@
 /* global game Client RemotePlayer Phaser */
 
-var collisions
 var lastXY = []
 var cursors
 
@@ -21,12 +20,10 @@ var playState = {
     map.addTilesetImage('LumberTiles', 'tiles')
 
     // create set layers of tilemap to the map, collision layer invisible
-    self.layer = map.createLayer('Ground')
-    let obstacles = map.createLayer('Obstacles')
-    self.layer = obstacles
-    game.world.bringToTop(obstacles)
-    collisions = map.createLayer('Meta')
-    collisions.visible = false;
+    map.createLayer('Ground')
+    map.createLayer('Obstacles')
+    let collisions = map.createLayer('Meta')
+    collisions.visible = false
     self.layer = collisions
 
     map.setCollision(1125, true, collisions)
@@ -48,6 +45,10 @@ var playState = {
     self.player.anchor.setTo(0.5, 0.5)
 
     game.physics.enable(self.player, Phaser.Physics.ARCADE)
+    self.player.body.immovable = true
+    self.player.body.collideWorldBounds = true
+
+    self.player.hasSeed = false
 
     self.pythInverse = 1 / Math.SQRT2
   },
@@ -62,7 +63,7 @@ var playState = {
   },
 
   scoreZone: function (sprite, tile) {
-    console.log(tile.index)
+    console.log(sprite.hasSeed)
   },
 
   create: function () {
@@ -92,6 +93,13 @@ var playState = {
 
     self.initMap()
     self.initSelf()
+
+    self.goldenSeed = game.add.sprite(490, 335, 'seed')
+    self.goldenSeed.scale.setTo(0.15, 0.15)
+    self.goldenSeed.anchor.setTo(0.5, 0.5)
+    game.physics.enable(self.goldenSeed, Phaser.Physics.ARCADE)
+    self.goldenSeed.body.immovable = true
+    self.goldenSeed.body.collideWorldBounds = true
   },
 
   update: function () {
@@ -110,7 +118,12 @@ var playState = {
     }
 
     game.physics.arcade.collide(self.player, self.layer, () => {
-      console.log('collided', self.layer)
+      console.log('collided')
+    })
+
+    game.physics.arcade.collide(self.player, self.goldenSeed, () => {
+      self.player.hasSeed = true
+      self.player.addChild(self.goldenSeed).alignTo(self.player, Phaser.LEFT_TOP)
     })
 
     self.player.animations.play('wait')
