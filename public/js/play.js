@@ -1,41 +1,40 @@
+/* global game Client RemotePlayer */
+
 var collisions
+var lastXY = []
 
 var playState = {
 
   player: null,
+  started: false,
   layer: null,
 
-  initMapAndPlayer: function () {
+  initMap: function () {
     var self = this
     // set map to tileset from load
     var map = game.add.tilemap('level')
     self.map = map
-
     // tell map which images to source for tilemap indexes
     map.addTilesetImage('LumberTiles', 'tiles')
     // set tile at index 1125 to collision
     map.setCollision(1125)
-
     // create set layers of tilemap to the map, collision layer invisible
     self.layer = map.createLayer('Ground')
-    self.initPlayer()
     let obstacles = map.createLayer('Obstacles')
     self.layer = obstacles
-
+    game.world.bringToTop(obstacles)
     collisions = map.createLayer('Meta')
     collisions.visible = false;
     self.layer = collisions
-
     map.setCollisionBetween(1124, 1126, true, collisions)
   },
 
-  initPlayer: function () {
+
+  initSelf: function () {
     var self = this
 
-    self.player = game.add.sprite(300, 200, 'characters')
+    self.player = game.add.sprite(200, 200, 'characters')
 
-    self.player.frame = 10
-    game.add.existing(self.player)
     self.player.anchor.setTo(0.5, 1)
     self.player.scale.setTo(1, 1)
 
@@ -50,24 +49,52 @@ var playState = {
     self.pythInverse = 1 / Math.SQRT2
   },
 
+  playerById: function (id) {
+    for (let other in game.playerMap) {
+      if (game.playerMap.hasOwnProperty(other)) {
+        if (game.playerMap[other].player.id === id) return game.playerMap[other].player
+      }
+    }
+    return false
+  },
+
   create: function () {
     var self = this
 
+    game.stage.disableVisibilityChange = true
     game.playerMap = {}
 
+    game.renderPlayer = function (data) {
+      let player = self.playerById(data.id)
+      player.x = data.x
+      player.y = data.y
+    }
+
     game.addNewPlayer = function (id, x, y) {
-      game.playerMap[id] = game.add.sprite(x, y, 'characters')
+      game.playerMap[id] = new RemotePlayer(id, game, self.player, x, y)
     }
 
     Client.askNewPlayer()
 
-    self.initMapAndPlayer()
-
+    self.initMap()
+    self.initSelf()
   },
 
   update: function () {
     var self = this
     var cursors =  game.input.keyboard.createCursorKeys()
+
+    // if (Object.keys(game.playerMap).length === 4) {
+    //   self.started = true
+    //   console.log('START!')
+    // }
+
+    for (let other in game.playerMap) {
+      if (game.playerMap.hasOwnProperty(other)) {
+        game.playerMap[other].update()
+        game.physics.arcade.collide(self.player, game.playerMap[other].player)
+      }
+    }
 
     game.physics.arcade.collide(self.player, self.layer)
 
@@ -105,5 +132,10 @@ var playState = {
     self.player.body.velocity.x *= targetSpeed
     self.player.body.velocity.y *= targetSpeed
 
+    if (lastXY[0] !== self.player.body.x || lastXY[1] !== self.player.body.y) {
+      Client.move(self.player.body.x, self.player.body.y)
+    }
+
+    lastXY = [self.player.body.x, self.player.body.y]
   }
 }
