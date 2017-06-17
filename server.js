@@ -25,6 +25,7 @@ const getAllPlayers = () => {
 
 io.on('connection', (socket) => {
   let otherPlayers = getAllPlayers()
+
   socket.on('newplayer', () => {
     console.log('newplayer!: ', server.lastPlayerID)
     socket.player = {
@@ -32,8 +33,14 @@ io.on('connection', (socket) => {
       x: 300,
       y: 200
     }
+
     socket.emit('allplayers', { players: otherPlayers, id: socket.player.id })
     socket.broadcast.emit('newplayer', socket.player)
+  })
+
+  socket.on('disconnect', () => {
+    console.log('Player disconnected: id', socket.player.id)
+    socket.broadcast.emit('removePlayer', socket.player)
   })
 
   socket.on('move', (data) => {

@@ -20,3 +20,6 @@ Client.socket.on('allplayers', (data) => {
 
 Client.socket.on('renderPlayer', (data) => game.renderPlayer(data))
 
+Client.socket.on('removePlayer', (data) => {
+  game.removePlayer(data)
+})

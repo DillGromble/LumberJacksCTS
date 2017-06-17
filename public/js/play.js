@@ -70,14 +70,21 @@ var playState = {
     game.playerMap = {}
     cursors =  game.input.keyboard.createCursorKeys()
 
+    game.addNewPlayer = function (id, x, y) {
+      game.playerMap[id] = new RemotePlayer(id, game, self.player, x, y)
+    }
+
     game.renderPlayer = function (data) {
       let player = self.playerById(data.id)
       player.x = data.x
       player.y = data.y
     }
 
-    game.addNewPlayer = function (id, x, y) {
-      game.playerMap[id] = new RemotePlayer(id, game, self.player, x, y)
+    game.removePlayer = function (data) {
+      const removedPlayer = self.playerById(data.id)
+      console.log(removedPlayer)
+      removedPlayer.destroy()
+      delete game.playerMap[data.id]
     }
 
     Client.askNewPlayer()
