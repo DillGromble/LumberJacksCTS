@@ -20,9 +20,6 @@ var playState = {
     // tell map which images to source for tilemap indexes
     map.addTilesetImage('LumberTiles', 'tiles')
 
-    // set tile at index 1125 to collision
-    map.setCollision(1125)
-
     // create set layers of tilemap to the map, collision layer invisible
     self.layer = map.createLayer('Ground')
     let obstacles = map.createLayer('Obstacles')
@@ -32,7 +29,8 @@ var playState = {
     collisions.visible = false;
     self.layer = collisions
 
-    map.setCollisionBetween(1124, 1126, true, collisions)
+    map.setCollision(1125, true, collisions)
+    map.setTileIndexCallback([970, 1078], self.scoreZone, this, collisions)
   },
 
 
@@ -63,6 +61,10 @@ var playState = {
     return false
   },
 
+  scoreZone: function (sprite, tile) {
+    console.log(tile.index)
+  },
+
   create: function () {
     var self = this
 
@@ -82,7 +84,6 @@ var playState = {
 
     game.removePlayer = function (data) {
       const removedPlayer = self.playerById(data.id)
-      console.log(removedPlayer)
       removedPlayer.destroy()
       delete game.playerMap[data.id]
     }
@@ -108,7 +109,9 @@ var playState = {
       }
     }
 
-    game.physics.arcade.collide(self.player, self.layer)
+    game.physics.arcade.collide(self.player, self.layer, () => {
+      console.log('collided', self.layer)
+    })
 
     self.player.animations.play('wait')
 
