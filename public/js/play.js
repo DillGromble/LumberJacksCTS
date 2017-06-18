@@ -16,7 +16,6 @@ var playState = {
 
     // set map to tileset from load
     var map = game.add.tilemap('level')
-    self.map = map
 
     // tell map which images to source for tilemap indexes
     map.addTilesetImage('LumberTiles', 'tiles')
@@ -30,6 +29,8 @@ var playState = {
 
     map.setCollision(1125, true, collisions)
     map.setTileIndexCallback([970, 1078], self.scoreZone, this, collisions)
+
+    self.map = map
   },
 
 
@@ -63,7 +64,8 @@ var playState = {
 
   scoreZone: function (sprite, tile) {
     if (sprite.data.isSeed) {
-      console.log('seed in the hole!')
+      if (tile.index === 970) Client.sendScoreRed()
+      else Client.sendScoreBlue()
     }
   },
 
@@ -87,6 +89,8 @@ var playState = {
     Client.enterGame()
     game.stage.disableVisibilityChange = true
     game.playerMap = {}
+
+    game.hasStarted = true
 
     self.left = game.input.keyboard.addKey(Phaser.Keyboard.LEFT)
     self.right = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT)
@@ -138,6 +142,11 @@ var playState = {
       if (axis.includes('y')) self.goldenSeed.body.velocity.y = 450 * direction.y
     }
 
+    game.updateMap = function (team, oldTile, newTile) {
+      if (team === 'red') self.map.replace(oldTile, newTile, 0, 17, 11, 7, 'Obstacles')
+      if (team === 'blue') self.map.replace(oldTile, newTile, 21, 0, 11, 7, 'Obstacles')
+    }
+
     self.initMap()
     self.initSelf()
 
@@ -158,13 +167,9 @@ var playState = {
       }
     }
 
-    game.physics.arcade.collide(self.goldenSeed, self.layer, () => {
-      // console.log('seed bounce!')
-    })
+    game.physics.arcade.collide(self.goldenSeed, self.layer)
 
-    game.physics.arcade.collide(self.player, self.layer, () => {
-      // console.log('collided')
-    })
+    game.physics.arcade.collide(self.player, self.layer)
 
     game.physics.arcade.collide(self.player, self.goldenSeed, () => {
       if (!self.player.hasSeed && self.player.timeSinceThrowOrTake <= 0) {

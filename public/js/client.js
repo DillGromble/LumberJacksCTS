@@ -16,11 +16,22 @@ Client.enterGame = () => Client.socket.emit('enterGame')
 
 Client.throwSeed = (data) => Client.socket.emit('throwSeed', data)
 
+Client.sendScoreRed = () => Client.socket.emit('scoreRed')
 
-Client.socket.on('newplayer', (data) => game.addNewPlayer(data.id, data.x, data.y))
+Client.sendScoreBlue = () => Client.socket.emit('scoreBlue')
+
+Client.resetState = () => Client.socket.emit('resetState')
+
+
+Client.socket.on('newplayer', (data) => {
+  game.addNewPlayer(data.id, data.x, data.y)
+})
+
+Client.socket.on('tallyPlayers', (data) => {
+  game.numPlayers = Object.keys(data).length
+})
 
 Client.socket.on('playerInfo', (data) => {
-  console.log('load x y')
   game.id = data.id
   game.startX = data.x
   game.startY = data.y
@@ -45,6 +56,13 @@ Client.socket.on('throwSeed', (data) => {
   game.throwSeed(data.axis, data.direction, data.ox, data.oy)
 })
 
-Client.socket.on('removePlayer', (data) => {
-  game.removePlayer(data)
+Client.socket.on('updateMap', (data) => {
+  console.log(data)
+  game.updateMap(data.team, data.oldTile, data.newTile)
 })
+
+Client.socket.on('removePlayer', (data) => {
+  if (game.hasStarted) game.removePlayer(data)
+  game.numPlayers--
+})
+

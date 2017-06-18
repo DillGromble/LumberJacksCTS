@@ -11,7 +11,6 @@ const server = app.listen(8080, () => console.log('Running on port 8080'))
 
 const io = socketio(server)
 
-server.lastPlayerID = 1
 
 // utils?
 const getAllPlayers = () => {
@@ -23,7 +22,16 @@ const getAllPlayers = () => {
   return players
 }
 
-var players = []
+server.lastPlayerID = 1
+
+let players = []
+
+let scoreState = {
+  red: { score: 0, nextTarget: 400, currentTile: 1 },
+  blue: { score: 0, nextTarget: 400, currentTile: 1 }
+}
+
+let mapTiles = [447, 415, 431]
 
 io.on('connection', (socket) => {
   let otherPlayers = getAllPlayers()
@@ -39,6 +47,7 @@ io.on('connection', (socket) => {
     players.push(socket.player)
 
     socket.emit('playerInfo', socket.player)
+    io.sockets.emit('tallyPlayers', getAllPlayers())
   })
 
   socket.on('enterGame', () => {
@@ -60,9 +69,40 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('throwSeed', data)
   })
 
+  socket.on('scoreRed', () => {
+    scoreState.red.score += 1
+    if (scoreState.red.score > scoreState.red.nextTarget) {
+      io.sockets.emit('updateMap', {
+        team: 'red',
+        oldTile: mapTiles[scoreState.red.currentTile - 1],
+        newTile: mapTiles[scoreState.red.currentTile++]
+      })
+      scoreState.red.nextTarget += 400
+      if (scoreState.red.nextTarget === 2400) console.log('RED WINS!')
+    }
+  })
+
+  socket.on('scoreBlue', () => {
+    scoreState.blue.score += 1
+    if (scoreState.blue.score > scoreState.blue.nextTarget) {
+      io.sockets.emit('updateMap', {
+        team: 'blue',
+        oldTile: mapTiles[scoreState.blue.currentTile - 1],
+        newTile: mapTiles[scoreState.blue.currentTile++]
+    })
+      scoreState.blue.nextTarget += 400
+      if (scoreState.red.nextTarget === 2400) console.log('BLUE WINS!')
+    }
+  })
+
   socket.on('disconnect', () => {
     console.log('Player disconnected: ', socket.player.id || 'bye!')
     socket.broadcast.emit('removePlayer', socket.player)
+  })
+
+  socket.on('resetState', () => scoreState = {
+    red: { score: 0, nextTarget: 400, currentTile: 1 },
+    blue: { score: 0, nextTarget: 400, currentTile: 1 }
   })
 
   socket.on('test', () => console.log(players))

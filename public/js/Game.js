@@ -10,5 +10,13 @@ game.state.add('load', loadState)
 game.state.add('title', titleState)
 game.state.add('play', playState)
 
+game.updateConnected = function (text) {
+  const newText = game.numPlayers === 4
+    ? 'Click to start!'
+    : `Waiting ${4 - game.numPlayers} more players...`
+
+  text.setText(newText)
+}
+
 //call boot state
 game.state.start('boot')
