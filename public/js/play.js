@@ -1,13 +1,15 @@
 /* global game Client RemotePlayer Phaser */
 
 var lastXY = []
-var seedIsHeld = false
+
 
 var playState = {
 
   player: null,
   started: false,
   layer: null,
+  hasSeedId: null,
+  pythInverse: 1 / Math.SQRT2,
 
   initMap: function () {
     var self = this
@@ -34,7 +36,7 @@ var playState = {
   initSelf: function () {
     var self = this
 
-    self.player = game.add.sprite(200, 200, 'characters')
+    self.player = game.add.sprite(game.startX, game.startY, 'characters')
 
     self.player.animations.add('wait', [4, 10, 16, 22], 3)
     self.player.animations.add('down', [0, 1, 2, 3], 5)
@@ -42,15 +44,12 @@ var playState = {
     self.player.animations.add('right', [12, 13, 14, 15], 5)
     self.player.animations.add('left', [18, 19, 20, 21], 5)
 
-    self.player.anchor.setTo(0.5, 0.5)
-
     game.physics.enable(self.player, Phaser.Physics.ARCADE)
     self.player.body.immovable = true
     self.player.body.collideWorldBounds = true
-
+    self.player.timeSinceThrowOrTake = 0
     self.player.hasSeed = false
 
-    self.pythInverse = 1 / Math.SQRT2
   },
 
   playerById: function (id) {
@@ -63,24 +62,29 @@ var playState = {
   },
 
   scoreZone: function (sprite, tile) {
-    console.log(sprite.hasSeed)
+    if (sprite.data.isSeed) {
+      console.log('seed in the hole!')
+    }
   },
 
-  buildSeed: function (x=0, y=0) {
+  buildSeed: function (x=10, y=10) {
     let newSeed = game.add.sprite(x, y, 'seed')
+
+    newSeed.data.isSeed = true
 
     newSeed.scale.setTo(0.15, 0.15)
     newSeed.anchor.setTo(0.5, 0.5)
     game.physics.enable(newSeed, Phaser.Physics.ARCADE)
     newSeed.body.immovable = true
     newSeed.body.collideWorldBounds = true
+    newSeed.body.bounce.set(1)
 
     return newSeed
   },
 
   create: function () {
     var self = this
-
+    Client.enterGame()
     game.stage.disableVisibilityChange = true
     game.playerMap = {}
 
@@ -114,7 +118,18 @@ var playState = {
       delete game.playerMap[data.id]
     }
 
-    Client.askNewPlayer()
+    game.seedExchange = function (id) {
+      const playerWithSeed = id ? self.playerById(id) : self.player
+      const playerLostSeed = self.hasSeedId ? self.playerById(self.hasSeedId) : self.player
+
+      playerLostSeed.hasSeed = false
+      playerLostSeed.timeSinceThrowOrTake = 50
+      playerWithSeed.hasSeed = true
+      self.goldenSeed.destroy()
+      self.goldenSeed = self.buildSeed()
+      playerWithSeed.addChild(self.goldenSeed)
+      self.hasSeedId = id
+    }
 
     self.initMap()
     self.initSelf()
@@ -124,7 +139,6 @@ var playState = {
 
   update: function () {
     var self = this
-
     // if (Object.keys(game.playerMap).length === 4) {
     //   self.started = true
     //   console.log('START!')
@@ -137,23 +151,25 @@ var playState = {
       }
     }
 
+    game.physics.arcade.collide(self.goldenSeed, self.layer, () => {
+      // console.log('seed bounce!')
+    })
+
     game.physics.arcade.collide(self.player, self.layer, () => {
-      console.log('collided')
+      // console.log('collided')
     })
 
     game.physics.arcade.collide(self.player, self.goldenSeed, () => {
-      if (!seedIsHeld) {
-        self.player.hasSeed = true
-        self.goldenSeed.destroy()
-        self.goldenSeed = self.buildSeed()
-        self.player.addChild(self.goldenSeed)
+      if (!self.player.hasSeed && self.player.timeSinceThrowOrTake <= 0) {
+        self.player.timeSinceThrowOrTake = 100
         Client.takeSeed()
+        game.seedExchange()
       }
-      seedIsHeld = true
     })
 
     self.player.animations.play('wait')
 
+// player movement
     if (self.left.isDown) {
       self.player.body.velocity.x = -1
       self.player.animations.play('left')
@@ -178,11 +194,50 @@ var playState = {
       self.player.body.velocity.y = 0
     }
 
+// seed throw
     if (self.space.isDown) {
-      console.log('SPAAAACE')
+      if (self.player.hasSeed) {
+        self.player.timeSinceThrowOrTake = 50
+
+        self.goldenSeed.destroy()
+        self.goldenSeed = self.buildSeed(self.player.body.x, self.player.body.y)
+
+        if (self.right.isDown) {
+          self.goldenSeed.body.velocity.x = 450
+        }
+        else if (self.left.isDown) {
+          self.goldenSeed.body.velocity.x = -450
+        }
+
+        if (self.up.isDown) {
+          self.goldenSeed.body.velocity.y = -450
+        }
+        else if (self.down.isDown) {
+          self.goldenSeed.body.velocity.y = 450
+        }
+
+        self.player.hasSeed = false
+      }
     }
 
+// seed deceleration
+    if (self.goldenSeed.body.velocity.x > 0) {
+      self.goldenSeed.body.velocity.x -= 4
+    }
+    else if (self.goldenSeed.body.velocity.x < 0) {
+      self.goldenSeed.body.velocity.x += 4
+    }
 
+    if (self.goldenSeed.body.velocity.y > 0) {
+      self.goldenSeed.body.velocity.y -= 4
+    }
+    else if (self.goldenSeed.body.velocity.y < 0) {
+      self.goldenSeed.body.velocity.y += 4
+    }
+
+    if (self.player.timeSinceThrowOrTake > 0) self.player.timeSinceThrowOrTake -= 1
+
+// handle player speed in diagonal
     let targetSpeed =
       (self.player.body.velocity.x !== 0 && self.player.body.velocity.y !== 0)
         ? 200 * self.pythInverse
@@ -191,6 +246,8 @@ var playState = {
     self.player.body.velocity.x *= targetSpeed
     self.player.body.velocity.y *= targetSpeed
 
+
+// socket emit move event
     if (lastXY[0] !== self.player.body.x || lastXY[1] !== self.player.body.y) {
       Client.move(self.player.body.x, self.player.body.y)
     }

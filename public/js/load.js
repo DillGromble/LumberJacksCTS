@@ -1,15 +1,17 @@
 //load.js
 
-/* global game Phaser */
+/* global game Client Phaser */
 
 var loadState = {
   preload: function () {
     var loadingLabel = game.add.text(80, 150, 'loading...', {font: '30px Courier', fill: '#ffffff'})
 
-    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL
+    // game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL
     game.scale.PageAlignHorizonally = true
     game.scale.PageAlignVertically = true
     game.stage.backgroundColor = '#000000'
+
+    Client.askNewPlayer()
 
     /***** Load Graphics Assets *****/
     game.load.spritesheet('characters', 'assets/sprites/log.png', 32, 32)

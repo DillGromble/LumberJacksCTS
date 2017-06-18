@@ -7,15 +7,13 @@ var RemotePlayer = function (index, game, player, startX, startY) {
   this.game = game
   this.player = player
 
-  this.player = game.add.sprite(x, y, 'characters')
+  this.player = game.add.sprite(x , y, 'characters')
 
   this.player.animations.add('wait', [4, 10, 16, 22], 3)
   this.player.animations.add('down', [0, 1, 2, 3], 5)
   this.player.animations.add('up', [6, 7, 8, 9], 5)
   this.player.animations.add('right', [12, 13, 14, 15], 5)
   this.player.animations.add('left', [18, 19, 20, 21], 5)
-
-  this.player.anchor.setTo(0.5, 0.5)
 
   this.player.id = index
 
