@@ -1,7 +1,7 @@
 /* global game Client RemotePlayer Phaser */
 
 var lastXY = []
-var cursors
+var seedIsHeld = false
 
 var playState = {
 
@@ -66,12 +66,37 @@ var playState = {
     console.log(sprite.hasSeed)
   },
 
+  buildSeed: function (x=0, y=0) {
+    let newSeed = game.add.sprite(x, y, 'seed')
+
+    newSeed.scale.setTo(0.15, 0.15)
+    newSeed.anchor.setTo(0.5, 0.5)
+    game.physics.enable(newSeed, Phaser.Physics.ARCADE)
+    newSeed.body.immovable = true
+    newSeed.body.collideWorldBounds = true
+
+    return newSeed
+  },
+
   create: function () {
     var self = this
 
     game.stage.disableVisibilityChange = true
     game.playerMap = {}
-    cursors =  game.input.keyboard.createCursorKeys()
+
+    self.left = game.input.keyboard.addKey(Phaser.Keyboard.LEFT)
+    self.right = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT)
+    self.up = game.input.keyboard.addKey(Phaser.Keyboard.UP)
+    self.down = game.input.keyboard.addKey(Phaser.Keyboard.DOWN)
+    self.space = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
+
+    game.input.keyboard.addKeyCapture(
+      [ Phaser.Keyboard.LEFT,
+        Phaser.Keyboard.RIGHT,
+        Phaser.Keyboard.UP,
+        Phaser.Keyboard.DOWN,
+        Phaser.Keyboard.SPACEBAR
+      ])
 
     game.addNewPlayer = function (id, x, y) {
       game.playerMap[id] = new RemotePlayer(id, game, self.player, x, y)
@@ -94,12 +119,7 @@ var playState = {
     self.initMap()
     self.initSelf()
 
-    self.goldenSeed = game.add.sprite(490, 335, 'seed')
-    self.goldenSeed.scale.setTo(0.15, 0.15)
-    self.goldenSeed.anchor.setTo(0.5, 0.5)
-    game.physics.enable(self.goldenSeed, Phaser.Physics.ARCADE)
-    self.goldenSeed.body.immovable = true
-    self.goldenSeed.body.collideWorldBounds = true
+    self.goldenSeed = self.buildSeed(490, 335)
   },
 
   update: function () {
@@ -122,17 +142,23 @@ var playState = {
     })
 
     game.physics.arcade.collide(self.player, self.goldenSeed, () => {
-      self.player.hasSeed = true
-      self.player.addChild(self.goldenSeed).alignTo(self.player, Phaser.LEFT_TOP)
+      if (!seedIsHeld) {
+        self.player.hasSeed = true
+        self.goldenSeed.destroy()
+        self.goldenSeed = self.buildSeed()
+        self.player.addChild(self.goldenSeed)
+        Client.takeSeed()
+      }
+      seedIsHeld = true
     })
 
     self.player.animations.play('wait')
 
-    if (cursors.left.isDown) {
+    if (self.left.isDown) {
       self.player.body.velocity.x = -1
       self.player.animations.play('left')
     }
-    else if (cursors.right.isDown) {
+    else if (self.right.isDown) {
       self.player.body.velocity.x = 1
       self.player.animations.play('right')
     }
@@ -140,16 +166,20 @@ var playState = {
       self.player.body.velocity.x = 0
     }
 
-    if (cursors.up.isDown) {
+    if (self.up.isDown) {
       self.player.body.velocity.y = -1
       self.player.animations.play('up')
     }
-    else if (cursors.down.isDown) {
+    else if (self.down.isDown) {
       self.player.body.velocity.y = 1
       self.player.animations.play('down')
     }
     else {
       self.player.body.velocity.y = 0
+    }
+
+    if (self.space.isDown) {
+      console.log('SPAAAACE')
     }
 
 

@@ -30,6 +30,7 @@ io.on('connection', (socket) => {
     console.log('newplayer!: ', server.lastPlayerID)
     socket.player = {
       id: server.lastPlayerID++,
+      hasSeed: false,
       x: 300,
       y: 200
     }
@@ -38,15 +39,20 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('newplayer', socket.player)
   })
 
-  socket.on('disconnect', () => {
-    console.log('Player disconnected: id', socket.player.id || 'bye!')
-    socket.broadcast.emit('removePlayer', socket.player)
-  })
-
   socket.on('move', (data) => {
     socket.player.x = data.x
     socket.player.y = data.y
     socket.broadcast.emit('renderPlayer', socket.player)
   })
+
+  socket.on('takeSeed', () => {
+    socket.broadcast.emit('tookSeed', socket.player)
+  })
+
+  socket.on('disconnect', () => {
+    console.log('Player disconnected: id', socket.player.id || 'bye!')
+    socket.broadcast.emit('removePlayer', socket.player)
+  })
+
 })
 
