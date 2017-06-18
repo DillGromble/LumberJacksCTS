@@ -56,8 +56,12 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('tookSeed', socket.player)
   })
 
+  socket.on('throwSeed', (data) => {
+    socket.broadcast.emit('throwSeed', data)
+  })
+
   socket.on('disconnect', () => {
-    console.log('Player disconnected: id', socket.player.id || 'bye!')
+    console.log('Player disconnected: ', socket.player.id || 'bye!')
     socket.broadcast.emit('removePlayer', socket.player)
   })
 

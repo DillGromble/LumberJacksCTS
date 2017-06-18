@@ -14,6 +14,9 @@ Client.takeSeed = () => Client.socket.emit('takeSeed')
 
 Client.enterGame = () => Client.socket.emit('enterGame')
 
+Client.throwSeed = (data) => Client.socket.emit('throwSeed', data)
+
+
 Client.socket.on('newplayer', (data) => game.addNewPlayer(data.id, data.x, data.y))
 
 Client.socket.on('playerInfo', (data) => {
@@ -36,6 +39,10 @@ Client.socket.on('renderPlayer', (data) => game.renderPlayer(data))
 Client.socket.on('tookSeed', (data) => {
   console.log(data.id, 'took the seed!')
   game.seedExchange(data.id)
+})
+
+Client.socket.on('throwSeed', (data) => {
+  game.throwSeed(data.axis, data.direction, data.ox, data.oy)
 })
 
 Client.socket.on('removePlayer', (data) => {

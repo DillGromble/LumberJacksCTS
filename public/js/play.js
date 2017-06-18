@@ -131,6 +131,13 @@ var playState = {
       self.hasSeedId = id
     }
 
+    game.throwSeed = function (axis, direction, ox, oy) {
+      self.goldenSeed.destroy()
+      self.goldenSeed = self.buildSeed(ox, oy)
+      if (axis.includes('x')) self.goldenSeed.body.velocity.x = 450 * direction.x
+      if (axis.includes('y')) self.goldenSeed.body.velocity.y = 450 * direction.y
+    }
+
     self.initMap()
     self.initSelf()
 
@@ -199,23 +206,39 @@ var playState = {
       if (self.player.hasSeed) {
         self.player.timeSinceThrowOrTake = 50
 
+        let clientPackage = {
+          axis: '',
+          direction: { x: 0, y: 0 },
+          ox: self.player.body.x,
+          oy: self.player.body.y
+        }
+
         self.goldenSeed.destroy()
         self.goldenSeed = self.buildSeed(self.player.body.x, self.player.body.y)
 
         if (self.right.isDown) {
+          clientPackage.axis += 'x'
+          clientPackage.direction.x = 1
           self.goldenSeed.body.velocity.x = 450
         }
         else if (self.left.isDown) {
+          clientPackage.axis += 'x'
+          clientPackage.direction.x = -1
           self.goldenSeed.body.velocity.x = -450
         }
 
         if (self.up.isDown) {
+          clientPackage.axis += 'y'
+          clientPackage.direction.y = -1
           self.goldenSeed.body.velocity.y = -450
         }
         else if (self.down.isDown) {
+          clientPackage.axis += 'y'
+          clientPackage.direction.y = 1
           self.goldenSeed.body.velocity.y = 450
         }
 
+        Client.throwSeed(clientPackage)
         self.player.hasSeed = false
       }
     }
