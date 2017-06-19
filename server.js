@@ -96,7 +96,7 @@ io.on('connection', (socket) => {
   })
 
   socket.on('disconnect', () => {
-    console.log('Player disconnected: ', socket.player.id || 'bye!')
+    console.log('Player disconnected: ', 'bye!')
     socket.broadcast.emit('removePlayer', socket.player)
   })
 
