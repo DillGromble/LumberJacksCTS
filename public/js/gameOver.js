@@ -12,6 +12,8 @@ var gameOverState = {
       font: '16px Space Mono', fill: '#ffffff'
     })
 
+    Client.resetState()
+
     game.input.activePointer.capture = true
 
   },

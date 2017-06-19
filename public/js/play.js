@@ -277,6 +277,8 @@ var playState = {
         ? 200 * self.pythInverse
         : 200
 
+    if (self.player.hasSeed) targetSpeed -= 30
+
     self.player.body.velocity.x *= targetSpeed
     self.player.body.velocity.y *= targetSpeed
 
