@@ -4,7 +4,7 @@ const socketio = require('socket.io')
 const path = require('path')
 
 app.use(express.static('public'))
-app.use(express.static('node_modules/phaser-ce/build'))
+app.use(express.static('node_modules/phaser/build'))
   .get('/', (req, res, next) => res.sendFile(path.join(__dirname, 'index.html')))
 
 const server = app.listen(process.env.PORT || 8080, () => console.log('Running on port 8080'))
