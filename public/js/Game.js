@@ -1,6 +1,6 @@
 //game.js
 
-/* global Phaser bootState loadState titleState playState */
+/* global Phaser bootState loadState titleState playState gameOverState*/
 
 var game = new Phaser.Game(1024, 768, Phaser.AUTO, null, 'gameDiv')
 
@@ -9,6 +9,7 @@ game.state.add('boot', bootState)
 game.state.add('load', loadState)
 game.state.add('title', titleState)
 game.state.add('play', playState)
+game.state.add('gameOver', gameOverState)
 
 game.updateConnected = function (text) {
   const newText = game.numPlayers === 4

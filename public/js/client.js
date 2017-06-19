@@ -57,7 +57,6 @@ Client.socket.on('throwSeed', (data) => {
 })
 
 Client.socket.on('updateMap', (data) => {
-  console.log(data)
   game.updateMap(data.team, data.oldTile, data.newTile)
 })
 
@@ -66,3 +65,6 @@ Client.socket.on('removePlayer', (data) => {
   game.numPlayers--
 })
 
+Client.socket.on('gameOver', (data) => {
+  game.Over(data.team)
+})

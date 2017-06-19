@@ -147,6 +147,11 @@ var playState = {
       if (team === 'blue') self.map.replace(oldTile, newTile, 21, 0, 11, 7, 'Obstacles')
     }
 
+    game.Over = function (team) {
+      game.winner = team
+      game.state.start('gameOver')
+    }
+
     self.initMap()
     self.initSelf()
 
@@ -208,6 +213,7 @@ var playState = {
 
 // seed throw
     if (self.space.isDown) {
+      console.log(self.player.body.x, self.player.body.y)
       if (self.player.hasSeed) {
         self.player.timeSinceThrowOrTake = 50
 

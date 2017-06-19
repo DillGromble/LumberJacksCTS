@@ -22,9 +22,16 @@ const getAllPlayers = () => {
   return players
 }
 
-server.lastPlayerID = 1
+server.lastPlayerID = 0
 
 let players = []
+
+let positions = {
+  0: { x: 115, y: 415},
+  1: { x: 115, y: 460},
+  2: { x: 895, y: 256},
+  3: { x: 895, y: 290},
+ }
 
 let scoreState = {
   red: { score: 0, nextTarget: 400, currentTile: 1 },
@@ -37,13 +44,11 @@ io.on('connection', (socket) => {
   let otherPlayers = getAllPlayers()
 
   socket.on('newplayer', () => {
-    console.log('newplayer!: ', server.lastPlayerID)
-    socket.player = {
-      id: server.lastPlayerID++,
+    console.log('newplayer!: ', ++server.lastPlayerID)
+    socket.player = Object.assign({
+      id: server.lastPlayerID,
       hasSeed: false,
-      x: 300,
-      y: 200
-    }
+    }, positions[server.lastPlayerID % 4])
     players.push(socket.player)
 
     socket.emit('playerInfo', socket.player)
@@ -78,7 +83,10 @@ io.on('connection', (socket) => {
         newTile: mapTiles[scoreState.red.currentTile++]
       })
       scoreState.red.nextTarget += 400
-      if (scoreState.red.nextTarget === 2400) console.log('RED WINS!')
+      if (scoreState.red.nextTarget === 1600) {
+        console.log('RED WINS!')
+        io.sockets.emit('gameOver', { team: 'Red' })
+      }
     }
   })
 
@@ -91,7 +99,10 @@ io.on('connection', (socket) => {
         newTile: mapTiles[scoreState.blue.currentTile++]
     })
       scoreState.blue.nextTarget += 400
-      if (scoreState.red.nextTarget === 2400) console.log('BLUE WINS!')
+      if (scoreState.red.nextTarget === 1600) {
+        console.log('BLUE WINS!')
+        io.sockets.emit('gameOver', { team: 'Blue' })
+      }
     }
   })
 
